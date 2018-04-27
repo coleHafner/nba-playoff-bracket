@@ -1,0 +1,23 @@
+mixin box(series, teams, roundNum)
+	- var lowSeedId = series.topRow.teamId;
+	- var highSeedId = series.bottomRow.teamId;
+	- var low = teams[lowSeedId];
+	- var high = teams[highSeedId];
+	div(class='box ' + roundNum)
+		.slot.top= low ? `${series.topRow.seedNum} - ${low.Nickname}` : `-`
+		.slot.bottom= high ? `${series.bottomRow.seedNum} - ${high.Nickname}` : `-`
+		.summary
+			=series.isScheduleAvailable ? series.summaryStatusText : `-`
+
+html
+	head
+		title= title
+		link(rel='stylesheet' href='/assets/styles.css')
+	body
+		// bracket here
+		each conf in ['West', 'East', 'NBA Finals']
+			each round, roundNum in bracket
+				div(class='col ' + conf.toLowerCase() + ' ' + roundNum)
+					each series in round
+						if (series.confName === conf)
+							+box(series, teams, roundNum)

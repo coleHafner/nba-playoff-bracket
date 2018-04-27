@@ -1,0 +1,39 @@
+.col {
+	width: 14%;
+	float: left;
+}
+
+.col.east {
+	float: right;
+}
+
+.col.two {
+	margin-top: 74px;
+}
+
+.col.three {
+	margin-top: 110px;
+}
+
+.box {
+	border: 1px solid #ccc;
+	margin: 10px;
+}
+
+.box .summary {
+	background-color: #ccc;
+	text-align: center;
+	padding: 3px;
+}
+
+.box .slot {
+	padding: 5px;
+}
+
+.box.finals {
+	margin-top: -140px;
+}
+
+.box.finals .slot {
+	height: 102px;
+}

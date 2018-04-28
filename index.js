@@ -1,72 +1,63 @@
 'use strict'
 
+const moment = require('moment');
 const rp = require('request-promise');
+const cache = require('ez-cache')();
 const express = require('express');
-const crypto = require('crypto');
 const path = require('path');
 const _ = require('lodash');
-const pug = require('pug');
-const fs = require('fs');
+
+const assets = path.join(__dirname, 'assets');
 const app = express();
 const port = 3000;
 
-const cache = {
-	set: (cacheFile, data) => {
-		fs.writeFileSync(cacheFile, data);
-	},
-	get: (cacheFile, callback) => {
-		return new Promise((resolve, reject) => {
-			fs.readFile(cacheFile, (err, rawData) => {
-				if (err) reject(err);
-				resolve(JSON.parse(rawData));
-			});
-		});
-	},
-	exists: cacheFile => {
-		return fs.existsSync(cacheFile);
-	},
-	getFilePath: url => {
-		const filename = `${crypto.createHash('md5').update(url).digest('hex')}.json`;
-		return `./cache/${filename}`;
-
-	}
-};
-
-app.set('view engine', 'pug');
 app.set('views', './views');
-
-const assets = path.join(__dirname, 'assets');
+app.set('view engine', 'pug');
 app.use('/assets', express.static(assets));
 
-app.use((req, res, next) => {
-	// get data
-	const rawData = fs.readFileSync('data.json');
-	const jsonData = JSON.parse(rawData);
-
-	// organize data
-	const byRound = {
-		'one': _.filter(_.cloneDeep(jsonData.series), ['roundNum', '1']),
-		'two': _.filter(_.cloneDeep(jsonData.series), ['roundNum', '2']),
-		'three': _.filter(_.cloneDeep(jsonData.series), ['roundNum', '3']),
-		'finals': _.filter(_.cloneDeep(jsonData.series), ['roundNum', '4']),
+app.use((req, res, next) => {	
+	res.locals = {
+		confs: ['West', 'East', 'NBA Finals'],
+		title: '2018 NBA Playoffs Bracket',
+		allSeries: null,
+		bracket: null,
+		teams: {}
 	};
 
+	
+	getBracket(req.query.hardRefresh)
+		.then(bracketCacheEntry => {
+			const bracket = bracketCacheEntry.data;
+			const lastUpdated = new Date(bracketCacheEntry.created);
+
+			res.locals.allSeries = bracket.series;
+			res.locals.lastUpdated = {
+				prettyString: moment(lastUpdated).fromNow(),
+				date: lastUpdated.toString()
+			};
+
+			res.locals.bracket = {
+				'one': _.filter(_.cloneDeep(bracket.series), ['roundNum', '1']),
+				'two': _.filter(_.cloneDeep(bracket.series), ['roundNum', '2']),
+				'three': _.filter(_.cloneDeep(bracket.series), ['roundNum', '3']),
+				'finals': _.filter(_.cloneDeep(bracket.series), ['roundNum', '4']),
+			};
+
+			next();
+		});
+})
+
+app.use((req, res, next) => {
 	const seeds = _.merge(
-		_.groupBy(jsonData.series, 'topRow.teamId'),
-		_.groupBy(jsonData.series, 'bottomRow.teamId')
+		_.groupBy(res.locals.allSeries, 'topRow.teamId'),
+		_.groupBy(res.locals.allSeries, 'bottomRow.teamId')
 	);
 	
 	const promises = [];
-	
-	res.locals = {
-		teams: {},
-		bracket: byRound, // jsonData.series,
-		title: '2018 NBA Playoffs Bracket'
-	};
 
 	// grab team data
 	_.keys(seeds).forEach(teamId => {
-		let promise = getTeamData(teamId)
+		let promise = getTeam(teamId)
 			.then(team => {
 				if (team === false) return;
 				res.locals.teams[teamId] = team;
@@ -94,16 +85,38 @@ app.get('/', (req, res) => {
 
 app.listen(port);
 
-function getTeamData(id) {
-	const host = `http://stats.nba.com`;
-	const path = `/feeds/teams/profile/${id}_TeamProfile.js`;
+function getBracket(hardRefresh) {
+	const url = 'http://data.nba.net/prod/v1/2017/playoffsBracket.json';
+	const cacheFile = cache.getFilePath(url);
+	const exists = cache.exists(cacheFile);
 
-	// check cache
-	const url = host + path;
+	if (!hardRefresh && exists) {
+		return cache.get(cacheFile, true)
+			.then(bracket => {
+				return bracket;
+			});
+	}
+
+	return rp.get(url, {json: true})
+		.then(reply => {
+			cache.set(cacheFile, reply);
+			return {
+				data: reply,
+				created: Date.now()
+			};
+		});
+}
+
+function getTeam(id) {
+	const url = `http://stats.nba.com/feeds/teams/profile/${id}_TeamProfile.js`;
 	const cacheFile = cache.getFilePath(url);
 
 	if (cache.exists(cacheFile)) {
-		return cache.get(cacheFile);
+		const team = cache.get(cacheFile);
+		return cache.get(cacheFile)
+			.then(team => {
+				return team.TeamDetails[0].Details[0];
+			});
 	}
 
 	return rp.get(url, {json: true})
@@ -111,8 +124,8 @@ function getTeamData(id) {
 			if (!reply.TeamDetails || !reply.TeamDetails[0] || !reply.TeamDetails[0].Details) {
 				return false;
 			}
-			const deets = reply.TeamDetails[0].Details[0];
-			cache.set(cacheFile, JSON.stringify(deets));
-			return deets;
+
+			cache.set(cacheFile, reply, true);
+			return reply.TeamDetails[0].Details[0];
 		});
 }

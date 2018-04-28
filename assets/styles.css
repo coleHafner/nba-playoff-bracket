@@ -1,3 +1,15 @@
+body {
+	font-family: arial;
+}
+
+.desktop {
+	display: block;
+}
+
+.mobile {
+	display: none;
+}
+
 .col {
 	width: 14%;
 	float: left;
@@ -16,12 +28,13 @@
 }
 
 .box {
+	position: relative;
 	border: 1px solid #ccc;
 	margin: 10px;
 }
 
 .box .summary {
-	background-color: #ccc;
+	background-color: #efefef;
 	text-align: center;
 	padding: 3px;
 }
@@ -36,4 +49,77 @@
 
 .box.finals .slot {
 	height: 102px;
+}
+
+.box .header {
+	background-color: blue;
+	color: white;
+	font-weight: bold;
+	padding: 5px;
+	text-align: center;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.live-now {
+    position: absolute;
+    top: -9px;
+    right: -16px;
+    padding: 3px;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+}
+
+.last-updated {
+	font-size: 12px;
+	color: #999;
+	margin-top: 5px;
+	text-align: center;
+}
+
+.upcoming {
+	text-decoration: none;
+	text-align: center;
+	margin: auto;
+	background-color: orangered;
+	padding: 20px;
+	padding-left: 50px;
+	padding-right: 50px;
+	color: white;
+	font-size: 16px;
+	display: block;
+	width: 200px;
+	border-radius: 5px;
+	font-weight: bold;
+}
+
+@media (max-width: 1080px) {
+	.desktop {
+		display: none;
+	}
+
+	.mobile {
+		display: block;
+		margin-bottom: 140px;
+	}	
+
+	.box.finals {
+		margin-top: 10px;
+	}
+
+	.footer {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: #efefef;
+		border-top: #999 1px solid;
+		padding: 10px;
+		padding-top: 20px;
+	}
 }

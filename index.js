@@ -8,10 +8,11 @@ const path = require('path');
 const _ = require('lodash');
 
 const assets = path.join(__dirname, 'assets');
+const views = path.join(__dirname, 'views');
+const port = process.env.PORT || 3000;
 const app = express();
-const port = 3000;
 
-app.set('views', './views');
+app.set('views', views);
 app.set('view engine', 'pug');
 app.use('/assets', express.static(assets));
 

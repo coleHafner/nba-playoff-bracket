@@ -122,4 +122,12 @@ body {
 		padding: 10px;
 		padding-top: 20px;
 	}
+
+	.live-now {
+		position: relative;
+		top: auto;
+		right: auto;
+		text-align: center;
+		font-size: 14px;
+	}
 }

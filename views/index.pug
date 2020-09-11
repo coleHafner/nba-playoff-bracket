@@ -8,6 +8,9 @@ mixin box(series, teams, roundNum, conf, mobile)
 			.header Finals!!!
 		.slot.top= low ? `${series.topRow.seedNum} - ${low.Nickname}` : `-`
 		.slot.bottom= high ? `${series.bottomRow.seedNum} - ${high.Nickname}` : `-`
+		if (low || high)
+			- var href = 'https://nba.com/playoffs/' +  (selectedSeason + 1) + '/' + series.seriesKey;
+			a.deets(href=href target='_blank') Details
 		.summary
 			=series.isScheduleAvailable ? series.summaryStatusText : `-`
 		if (series.isGameLive)
@@ -19,22 +22,37 @@ html
 		link(rel='stylesheet' href='/assets/styles.css')
 	body
 		center
-			h1 2017-18 NBA Playoffs Bracket
+			h1= title
+			label Season:&nbsp;
+				select(id='season')
+					each opt in seasons
+						option(value=opt.val selected=opt.selected) #{opt.text}
+					
+
 		.clearfix.desktop
 			each conf in confs
 				each round, roundNum in bracket
 					div(class='col ' + conf.toLowerCase() + ' ' + roundNum)
-						each series in round
+						each series, index in round
 							if (series.confName === conf)
-								+box(series, teams, roundNum)
+								+box(series, teams, roundNum, index)
 
 		.mobile
 			each round, roundNum in bracket
 				h3= roundNum === 'finals' ? 'Finals!!!' : 'Round ' + roundNum.charAt(0).toUpperCase() + roundNum.substr(1)
-				each series in round
+				each series, index in round
 					+box(series, teams, roundNum, conf, true)
 
 		.footer
 			a.upcoming(href='https://stats.nba.com/schedule/' target="_blank") View Upcoming Games
-			.last-updated Last Updated: #{lastUpdated.prettyString}
-			div(style="display:none")= lastUpdated.date
+			.last-updated 
+				Last Updated: #{lastUpdated.prettyString} &nbsp;
+				if (isLatestSeason)
+					a.refresh(href='/?hardRefresh=1') Refresh
+		
+		script.
+			const season = document.getElementById('season');
+
+			season.onchange = () => {
+				window.location = `/?season=${season.options[season.selectedIndex].value}`;
+			};

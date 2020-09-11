@@ -51,12 +51,31 @@ body {
 	height: 102px;
 }
 
+.box.finals .deets {
+	position: relative;
+	text-align: center;
+	padding-bottom: 10px;
+}
+
 .box .header {
 	background-color: blue;
 	color: white;
 	font-weight: bold;
 	padding: 5px;
 	text-align: center;
+}
+
+.box .deets {
+	position: absolute;
+	font-size: 12px;
+	font-family: arial;
+	display: block;
+	padding: 3px;
+	text-align: center;
+	right: 3px;
+	top: 3px;
+	background-color: transparent;
+	color: black;
 }
 
 .clearfix::after {
@@ -86,7 +105,7 @@ body {
 	text-decoration: none;
 	text-align: center;
 	margin: auto;
-	background-color: orangered;
+	background-color: blue;
 	padding: 20px;
 	padding-left: 50px;
 	padding-right: 50px;
@@ -98,7 +117,13 @@ body {
 	font-weight: bold;
 }
 
-@media (max-width: 1080px) {
+.refresh {
+	font-size: 12px;
+	text-align: center;
+	color: #000;
+}
+
+@media (max-width: 1200px) {
 	.desktop {
 		display: none;
 	}

@@ -16,17 +16,39 @@ app.set('views', views);
 app.set('view engine', 'pug');
 app.use('/assets', express.static(assets));
 
-app.use((req, res, next) => {	
+app.use((req, res, next) => {
+	const latestSeason = '2019';
+	const selectedSeason = req.query.season || latestSeason;
+	const isLatestSeason = selectedSeason === latestSeason;
+	let selectedSeasonLabel = '';
 	res.locals = {
 		confs: ['West', 'East', 'NBA Finals'],
-		title: '2018 NBA Playoffs Bracket',
+		seasons:  [
+			{val: '2016', text: '2016 - 17', selected: false},
+			{val: '2017', text: '2017 - 18', selected: false},
+			{val: '2018', text: '2018 - 19', selected: false},
+			{val: '2019', text: '2019 - 20', selected: false},
+		],
+		title: '2020 NBA Playoffs Bracket',
+		selectedSeason: parseInt(selectedSeason),
+		isLatestSeason,
 		allSeries: null,
 		bracket: null,
 		teams: {}
 	};
 
-	
-	getBracket(req.query.hardRefresh)
+	res.locals.seasons = res.locals.seasons.map(opt => {
+		if (opt.val === selectedSeason) {
+			opt.selected = true;
+			selectedSeasonLabel = opt.text;
+		}
+		return opt;
+	}),
+
+	res.locals.title = `${selectedSeasonLabel} NBA Playoffs Bracket`;
+	const doHardRefresh = req.query.hardRefresh && isLatestSeason;
+
+	getBracket(selectedSeason, doHardRefresh)
 		.then(bracketCacheEntry => {
 			const bracket = bracketCacheEntry.data;
 			const lastUpdated = new Date(bracketCacheEntry.created);
@@ -37,13 +59,49 @@ app.use((req, res, next) => {
 				date: lastUpdated.toString()
 			};
 
-			res.locals.bracket = {
+			const finalBracket = {
 				'one': _.filter(_.cloneDeep(bracket.series), ['roundNum', '1']),
 				'two': _.filter(_.cloneDeep(bracket.series), ['roundNum', '2']),
 				'three': _.filter(_.cloneDeep(bracket.series), ['roundNum', '3']),
 				'finals': _.filter(_.cloneDeep(bracket.series), ['roundNum', '4']),
 			};
 
+			for (var roundNum in finalBracket) {
+				const serieses = finalBracket[roundNum];
+
+				let eastCounter = 0;
+				let westCounter = 0;
+
+				if (roundNum === 'two') {
+					eastCounter = 4;
+					westCounter = 4;
+				}else if (roundNum === 'three') {
+					eastCounter = 6;
+					westCounter = 6;
+				}
+
+				serieses.forEach((series, index) => {
+					const conf = series.confName.toLowerCase();
+
+					if (conf === 'east') {
+						eastCounter++;
+					}
+
+					if (conf === 'west') {
+						westCounter++;
+					}
+
+					const counter = conf === 'west'
+						? westCounter
+						: eastCounter;
+
+					series.seriesKey = conf !== 'nba finals'
+						? `${conf}series${counter}`
+						: 'finals';
+				})
+			}
+
+			res.locals.bracket = finalBracket;
 			next();
 		});
 })
@@ -84,10 +142,12 @@ app.get('/', (req, res) => {
 	res.render('index', res.locals);
 });
 
-app.listen(port);
+app.listen(port, () => {
+	console.log(`app listening on port http://localhost:${port}`);
+});
 
-function getBracket(hardRefresh) {
-	const url = 'http://data.nba.net/prod/v1/2017/playoffsBracket.json';
+function getBracket(season, hardRefresh) {
+	const url = `http://data.nba.net/prod/v1/${season}/playoffsBracket.json`;
 	const cacheFile = cache.getFilePath(url);
 	const exists = cache.exists(cacheFile);
 

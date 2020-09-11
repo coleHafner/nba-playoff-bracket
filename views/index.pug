@@ -1,13 +1,22 @@
+mixin teamBlock(className, team, isFinals, seedNum)
+	.slot(class=className)
+		if (!isFinals)
+			span= team ? `${seedNum} - ${team.Nickname}` : `-`
+		else
+			if(team)
+				img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${team.Abbreviation}.svg`)
+			else 
+				span= '-'
+	
 mixin box(series, teams, roundNum, conf, mobile)
 	- var lowSeedId = series.topRow.teamId;
 	- var highSeedId = series.bottomRow.teamId;
 	- var low = teams[lowSeedId];
 	- var high = teams[highSeedId];
 	div(class='box ' + roundNum)
-		if (series.confName === 'NBA Finals')
-			.header Finals!!!
-		.slot.top= low ? `${series.topRow.seedNum} - ${low.Nickname}` : `-`
-		.slot.bottom= high ? `${series.bottomRow.seedNum} - ${high.Nickname}` : `-`
+		- const isFinals = series.confName === 'NBA Finals';
+		+teamBlock('top', low, isFinals, series.topRow.seedNum)
+		+teamBlock('bottom', high, isFinals, series.bottomRow.seedNum)
 		if (low || high)
 			- var href = 'https://nba.com/playoffs/' +  (selectedSeason + 1) + '/' + series.seriesKey;
 			a.deets(href=href target='_blank') Details
@@ -46,7 +55,7 @@ html
 		.footer
 			a.upcoming(href='https://stats.nba.com/schedule/' target="_blank") View Upcoming Games
 			.last-updated 
-				Last Updated: #{lastUpdated.prettyString} &nbsp;
+				| Updated #{lastUpdated.prettyString} &nbsp;
 				if (isLatestSeason)
 					a.refresh(href='/?hardRefresh=1') Refresh
 		

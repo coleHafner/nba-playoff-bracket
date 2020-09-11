@@ -48,7 +48,7 @@ app.use((req, res, next) => {
 	res.locals.title = `${selectedSeasonLabel} NBA Playoffs Bracket`;
 	const doHardRefresh = req.query.hardRefresh && isLatestSeason;
 
-	getBracket(selectedSeason, doHardRefresh)
+	getBracket(selectedSeason, doHardRefresh, isLatestSeason)
 		.then(bracketCacheEntry => {
 			const bracket = bracketCacheEntry.data;
 			const lastUpdated = new Date(bracketCacheEntry.created);
@@ -146,7 +146,7 @@ app.listen(port, () => {
 	console.log(`app listening on port http://localhost:${port}`);
 });
 
-function getBracket(season, hardRefresh) {
+function getBracket(season, hardRefresh, isCurrentSeason) {
 	const url = `http://data.nba.net/prod/v1/${season}/playoffsBracket.json`;
 	const cacheFile = cache.getFilePath(url);
 	const exists = cache.exists(cacheFile);
@@ -160,7 +160,8 @@ function getBracket(season, hardRefresh) {
 
 	return rp.get(url, {json: true})
 		.then(reply => {
-			cache.set(cacheFile, reply);
+			const neverExpire = isCurrentSeason === false;
+			cache.set(cacheFile, reply, neverExpire);
 			return {
 				data: reply,
 				created: Date.now()

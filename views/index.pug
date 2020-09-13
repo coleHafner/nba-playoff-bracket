@@ -75,12 +75,14 @@ html
 		.footer
 			a.upcoming(href='https://stats.nba.com/schedule/' target="_blank") View Upcoming Games
 			.last-updated 
-				p
-					if (isLatestSeason)
+				if (isLatestSeason)
+					p
 						| Updated #{lastUpdated.prettyString} &nbsp;
 						a.refresh(href='/?hardRefresh=1') Refresh
-					p.created-by 
-						a(href=`https://github.com/coleHafner/nba-playoff-bracket/` target="_blank") View on github
+				p
+					span.created-by 
+						| Crafted with &#9829; | 
+						a(href=`https://github.com/coleHafner/nba-playoff-bracket/commit/${version}` target="_blank") version #{version.substr(0, 7)}
 		
 		script.
 			const season = document.getElementById('season');

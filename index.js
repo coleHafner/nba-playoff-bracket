@@ -140,12 +140,17 @@ app.use((req, res, next) => {
 		});
 });
 
-// app.use((req, res, next) => {
-// 	exec('git rev-parse HEAD', (err, stdout) => {
-// 		res.locals.version = stdout;
-// 		next();
-// 	});
-// })
+app.use((req, res, next) => {
+	if (process.env.SOURCE_VERSION) {
+		res.locals.version = process.env.SOURCE_VERSION;
+		next();
+	}else {
+		exec('git rev-parse HEAD', (err, stdout) => {
+			res.locals.version = stdout;
+			next();
+		});
+	}
+})
 
 app.use((req, res, next) => {
 	for (var roundNum in res.locals.bracket) {

@@ -76,12 +76,11 @@ html
 			a.upcoming(href='https://stats.nba.com/schedule/' target="_blank") View Upcoming Games
 			.last-updated 
 				p
-					span.created-by 
-						| Created by Cole Hafner 
-						a(href=`https://github.com/coleHafner/nba-playoff-bracket/commit/${version}` target="_blank") version #{version.substr(0, 7)}
-				if (isLatestSeason)
-					| Updated #{lastUpdated.prettyString} &nbsp;
-					a.refresh(href='/?hardRefresh=1') Refresh
+					if (isLatestSeason)
+						| Updated #{lastUpdated.prettyString} &nbsp;
+						a.refresh(href='/?hardRefresh=1') Refresh
+					p.created-by 
+						a(href=`https://github.com/coleHafner/nba-playoff-bracket/` target="_blank") View on github
 		
 		script.
 			const season = document.getElementById('season');

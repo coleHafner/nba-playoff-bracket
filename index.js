@@ -140,12 +140,12 @@ app.use((req, res, next) => {
 		});
 });
 
-app.use((req, res, next) => {
-	exec('git rev-parse HEAD', (err, stdout) => {
-		res.locals.version = stdout;
-		next();
-	});
-})
+// app.use((req, res, next) => {
+// 	exec('git rev-parse HEAD', (err, stdout) => {
+// 		res.locals.version = stdout;
+// 		next();
+// 	});
+// })
 
 app.use((req, res, next) => {
 	for (var roundNum in res.locals.bracket) {

@@ -81,8 +81,9 @@ html
 						a.refresh(href='/?hardRefresh=1') Refresh
 				p
 					span.created-by 
-						| Crafted with &#9829; | 
-						a(href=`https://github.com/coleHafner/nba-playoff-bracket/commit/${version}` target="_blank") version #{version.substr(0, 7)}
+						- var linkPath = version ? `/commit/${version}` : '';
+						- var linkText = version ? `version ${version.substr(0, 7)}` : 'View on GitHub';
+						a(href=`https://github.com/coleHafner/nba-playoff-bracket${linkPath}` target="_blank") #{linkText}
 		
 		script.
 			const season = document.getElementById('season');

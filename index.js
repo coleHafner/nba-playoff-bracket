@@ -6,6 +6,7 @@ const cache = require('ez-cache')();
 const express = require('express');
 const path = require('path');
 const _ = require('lodash');
+const exec = require('child_process').exec;
 
 const assets = path.join(__dirname, 'assets');
 const views = path.join(__dirname, 'views');
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 		isLatestSeason,
 		allSeries: null,
 		bracket: null,
+		version: '',
 		teams: {}
 	};
 
@@ -136,6 +138,49 @@ app.use((req, res, next) => {
 			console.log('something went wrong.', err);
 			res.status(500).send();
 		});
+});
+
+app.use((req, res, next) => {
+	exec('git rev-parse HEAD', (err, stdout) => {
+		res.locals.version = stdout;
+		next();
+	});
+})
+
+app.use((req, res, next) => {
+	for (var roundNum in res.locals.bracket) {
+		const serieses = res.locals.bracket[roundNum];
+
+		serieses.forEach(series => {
+			if (!series.isScheduleAvailable) {
+				series.seriesSummary = '-';
+				return;
+			}
+
+			const team1 = res.locals.teams[series.topRow.teamId];
+			const team2 = res.locals.teams[series.bottomRow.teamId];
+
+			const split = series.summaryStatusText.split(' ');
+			const leadingTeamAbbrv = split[0];
+			const winOrLeads = split[1];
+			const seriesScore = split[2];
+
+			const leadingTeam = team1.Abbreviation === leadingTeamAbbrv ? team1 : team2;
+			const trailingTeam = leadingTeam === team1 ? team2 : team1;
+
+			const leadingTeamSeed = leadingTeam.Team_Id == series.topRow.teamId ? series.topRow.seedNum : series.bottomRow.seedNum;
+			const trailingTeamSeed = trailingTeam.Team_Id == series.bottomRow.teamId ? series.bottomRow.seedNum : series.topRow.seedNum;
+
+			series.seriesSummary = [
+				`${leadingTeam.Abbreviation}(${leadingTeamSeed})`,
+				winOrLeads === 'wins' ? 'beat' : winOrLeads,
+				`${trailingTeam.Abbreviation}(${trailingTeamSeed})`,
+				seriesScore
+			].join(' ');
+		});
+	}
+
+	next();
 });
 
 app.get('/', (req, res) => {

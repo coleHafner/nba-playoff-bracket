@@ -10,6 +10,13 @@ body {
 	display: none;
 }
 
+select {
+	height: 75px;
+	width: 400px;
+	font-size: 30px;
+	text-indent: 75px;
+}
+
 .col {
 	width: 14%;
 	float: left;
@@ -33,19 +40,32 @@ body {
 	margin: 10px;
 }
 
+.box table {
+	text-align: center;
+	margin: auto;
+}
+.box table img {
+	width: 70px;
+	height: 70px;
+}
+
+.box table .placeholder {
+	position: relative;
+	display: block;
+	background-color: white;
+	width: 70px;
+	height: 70px;
+}
+
 .box .summary {
 	background-color: #efefef;
 	text-align: center;
 	padding: 3px;
+	font-size: 13px;
 }
 
 .box .slot {
 	padding: 5px;
-}
-
-.box .slot img {
-	height: 50px;
-	width: 50px;
 }
 
 .box.finals {
@@ -127,7 +147,7 @@ body {
 	font-weight: bold;
 }
 
-.refresh {
+.created-by, .created-by a, .refresh {
 	font-size: 12px;
 	text-align: center;
 	color: #000;
@@ -140,11 +160,58 @@ body {
 
 	.mobile {
 		display: block;
-		margin-bottom: 140px;
+		margin-bottom: 500px;
 	}	
+
+	.mobile table td {
+		font-size: 40px;
+	}
+
+	.mobile table td img {
+		width: 200px;
+		height: 200px;
+	}
+
+	select {
+		height: 75px;
+		width: 500px;
+		font-size: 30px;
+		text-indent: 115px;
+	}
+
+	.upcoming {
+		font-size: 30px;
+		width: 400px;
+	}
+
+	.box table .placeholder {
+		width: 200px;
+		height: 200px;
+	}
+
+	.footer .last-updated, .footer .last-updated a, .footer .last-updated .created-by, .footer .last-updated .created-by a {
+		font-size: 30px;
+	}
+
+	.box {
+		margin-bottom: 10px;
+	}
+
+	.box .summary a {
+		font-size: 20px;
+	}
 
 	.box.finals {
 		margin-top: 10px;
+	}
+
+	.box.finals .slot {
+		height: 300px;
+	}
+
+	.box.finals .slot.top img, .box.finals .slot.bottom img {
+		width: 300px;
+		height: 300px;
 	}
 
 	.footer {
@@ -154,8 +221,12 @@ body {
 		right: 0;
 		background: #efefef;
 		border-top: #999 1px solid;
-		padding: 10px;
-		padding-top: 20px;
+		padding-top: 50px;
+		padding-bottom: 50px;
+	}
+
+	.footer .upcoming {
+		padding: 75px;
 	}
 
 	.live-now {

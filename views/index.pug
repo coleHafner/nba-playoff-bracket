@@ -1,8 +1,5 @@
 mixin teamBlock(className, team, isFinals, seedNum)
 	.slot(class=className)
-		if (!isFinals)
-			span= team ? `${seedNum} - ${team.Nickname}` : `-`
-		else
 			if(team)
 				img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${team.Abbreviation}.svg`)
 			else 
@@ -14,14 +11,37 @@ mixin box(series, teams, roundNum, conf, mobile)
 	- var low = teams[lowSeedId];
 	- var high = teams[highSeedId];
 	div(class='box ' + roundNum)
-		- const isFinals = series.confName === 'NBA Finals';
-		+teamBlock('top', low, isFinals, series.topRow.seedNum)
-		+teamBlock('bottom', high, isFinals, series.bottomRow.seedNum)
-		if (low || high)
-			- var href = 'https://nba.com/playoffs/' +  (selectedSeason + 1) + '/' + series.seriesKey;
-			a.deets(href=href target='_blank') Details
+		if (series.confName === 'NBA Finals')
+			.slot(class='top')
+				if(low)
+					img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${low.Abbreviation}.svg`)
+				else 
+					span= '-'
+			.slot(class='bottom')
+				if(high)
+					img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${high.Abbreviation}.svg`)
+				else 
+					span= '-'
+		else 
+			table
+				tr
+					td
+						if (low)
+							img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${low.Abbreviation}.svg`)
+						else
+							.placeholder
+					td vs.
+					td
+						if (high)
+							img(src=`https://cdn.nba.net/assets/logos/teams/secondary/web/${high.Abbreviation}.svg`)
+						else 
+							.placeholder
 		.summary
-			=series.isScheduleAvailable ? series.summaryStatusText : `-`
+			if (series.seriesSummary !== '-')
+				- var href = 'https://nba.com/playoffs/' +  (selectedSeason + 1) + '/' + series.seriesKey;
+				a(href=href target="_blank") #{series.seriesSummary}
+			else 
+				=series.seriesSummary
 		if (series.isGameLive)
 			.live-now Live now
 
@@ -32,10 +52,10 @@ html
 	body
 		center
 			h1= title
-			label Season:&nbsp;
-				select(id='season')
-					each opt in seasons
-						option(value=opt.val selected=opt.selected) #{opt.text}
+
+			select(id='season')
+				each opt in seasons
+					option(value=opt.val selected=opt.selected) #{opt.text} Season
 					
 
 		.clearfix.desktop
@@ -48,15 +68,19 @@ html
 
 		.mobile
 			each round, roundNum in bracket
-				h3= roundNum === 'finals' ? 'Finals!!!' : 'Round ' + roundNum.charAt(0).toUpperCase() + roundNum.substr(1)
+				h1= roundNum === 'finals' ? 'Finals!!!' : 'Round ' + roundNum.charAt(0).toUpperCase() + roundNum.substr(1)
 				each series, index in round
 					+box(series, teams, roundNum, conf, true)
 
 		.footer
 			a.upcoming(href='https://stats.nba.com/schedule/' target="_blank") View Upcoming Games
 			.last-updated 
-				| Updated #{lastUpdated.prettyString} &nbsp;
+				p
+					span.created-by 
+						| Created by Cole Hafner 
+						a(href=`https://github.com/coleHafner/nba-playoff-bracket/commit/${version}` target="_blank") version #{version.substr(0, 7)}
 				if (isLatestSeason)
+					| Updated #{lastUpdated.prettyString} &nbsp;
 					a.refresh(href='/?hardRefresh=1') Refresh
 		
 		script.
